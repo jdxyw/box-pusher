@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>推箱子大师 · 100关挑战</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Header -->
+    <header class="top-bar">
+      <div class="brand-group">
+        <div class="brand-logo" aria-hidden="true">📦</div>
+        <div class="brand-titles">
+          <h1>推箱子大师 <span class="badge-100">100关挑战</span></h1>
+          <p class="subtitle" id="headerSubtitle">经典益智仓库解谜 · 步步为营</p>
+        </div>
+      </div>
+
+      <div class="level-QuickNav">
+        <button class="icon-btn" id="btnPrevLevel" title="上一关 (P)">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        </button>
+        <button class="level-pill" id="btnOpenLevels" title="点击选择关卡 (1-100)">
+          <span class="tier-tag" id="currentTierBadge">新手入门</span>
+          <span class="level-num" id="currentLevelLabel">第 1 关</span>
+          <span class="level-name" id="currentLevelTitle">初出茅庐</span>
+          <span class="variant-tag" id="currentVariantBadge">🎲 题库 #1/20</span>
+          <span class="level-stars-inline" id="currentLevelStars">☆☆☆</span>
+          <svg class="caret-icon" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <button class="icon-btn" id="btnNextLevel" title="下一关 (N)">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </button>
+      </div>
+
+      <div class="top-actions">
+        <div class="global-progress-chip" id="btnOpenLevelsStats" title="查看总进度">
+          <span>🏆 <strong id="totalClearedCount">0</strong>/100</span>
+          <span class="divider">|</span>
+          <span>⭐ <strong id="totalStarsCount">0</strong>/300</span>
+        </div>
+        <button class="icon-btn" id="btnToggleSound" title="音效开关 (M)" aria-label="音效开关">
+          <span id="soundIcon">🔊</span>
+        </button>
+        <button class="icon-btn" id="btnOpenHelp" title="玩法说明 (?)" aria-label="玩法说明">
+          <span>❓</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="game-workspace">
+      <!-- Left / Top HUD Stats & Controls -->
+      <aside class="side-panel">
+        <div class="stats-card">
+          <div class="stat-row">
+            <div class="stat-item">
+              <span class="stat-label">当前移动</span>
+              <span class="stat-value" id="statMoves">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">推箱次数</span>
+              <span class="stat-value highlight" id="statPushes">0</span>
+            </div>
+          </div>
+          <div class="stat-row secondary">
+            <div class="stat-item">
+              <span class="stat-label">三星目标</span>
+              <span class="stat-subvalue" id="statPar">≤ 0 推</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">最佳纪录</span>
+              <span class="stat-subvalue" id="statBest">未通关</span>
+            </div>
+          </div>
+          <div class="target-progress-wrap">
+            <div class="target-progress-header">
+              <span>归位进度</span>
+              <span id="statBoxProgress">0 / 0</span>
+            </div>
+            <div class="target-progress-bar">
+              <div class="target-progress-fill" id="boxProgressFill" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-grid">
+          <button class="ctrl-btn" id="btnUndo" title="撤销一步 (Z / Backspace)">
+            <span class="btn-icon">↩️</span>
+            <span class="btn-text">撤销 <kbd>Z</kbd></span>
+          </button>
+          <button class="ctrl-btn" id="btnRedo" title="重做一步 (Y)">
+            <span class="btn-icon">↪️</span>
+            <span class="btn-text">重做 <kbd>Y</kbd></span>
+          </button>
+          <button class="ctrl-btn" id="btnRestart" title="重新开始本关 (R)">
+            <span class="btn-icon">🔄</span>
+            <span class="btn-text">重置 <kbd>R</kbd></span>
+          </button>
+          <button class="ctrl-btn accent-variant" id="btnRandomVariant" title="随机切换本关题库地图 (V)">
+            <span class="btn-icon">🎲</span>
+            <span class="btn-text">随机换图 <kbd>V</kbd></span>
+          </button>
+          <button class="ctrl-btn accent-hint" id="btnHint" title="智能提示下一步 (H)">
+            <span class="btn-icon">💡</span>
+            <span class="btn-text">提示一步 <kbd>H</kbd></span>
+          </button>
+          <button class="ctrl-btn accent-demo" id="btnDemo" title="自动播放标准通关演示">
+            <span class="btn-icon" id="demoBtnIcon">▶️</span>
+            <span class="btn-text" id="demoBtnText">通关演示</span>
+          </button>
+        </div>
+
+        <!-- On-Screen D-Pad for Touch / Mouse Convenience -->
+        <div class="dpad-card">
+          <div class="dpad-label">方向控制 / 点击地图自动寻路</div>
+          <div class="dpad-grid">
+            <button class="dpad-btn up" data-dir="U" aria-label="向上">▲</button>
+            <button class="dpad-btn left" data-dir="L" aria-label="向左">◀</button>
+            <button class="dpad-btn center" id="btnCenterUndo" title="撤销一步">↩</button>
+            <button class="dpad-btn right" data-dir="R" aria-label="向右">▶</button>
+            <button class="dpad-btn down" data-dir="D" aria-label="向下">▼</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Canvas Stage -->
+      <section class="canvas-stage" id="canvasStage">
+        <div class="canvas-frame">
+          <canvas id="gameCanvas"></canvas>
+
+          <!-- Deadlock / Hint / Demo Floating Banner -->
+          <div class="floating-banner hidden" id="statusBanner">
+            <span class="banner-icon" id="bannerIcon">⚠️</span>
+            <span class="banner-text" id="bannerText">箱子可能卡在死角了，按 Z 撤销</span>
+            <button class="banner-action" id="bannerActionBtn">撤销一步</button>
+          </div>
+
+          <!-- Demo Playback Control Bar -->
+          <div class="demo-bar hidden" id="demoControlBar">
+            <span class="demo-badge">🤖 正在演示标准解法</span>
+            <span class="demo-step-counter" id="demoStepCounter">0 / 0</span>
+            <button class="demo-mini-btn" id="btnDemoSpeed" title="切换演示速度">1x</button>
+            <button class="demo-mini-btn stop" id="btnStopDemo">停止演示</button>
+          </div>
+        </div>
+
+        <div class="stage-footer-tips">
+          <span>🖱️ 点击任意空地可自动寻路移动 · 点击相邻箱子可直接推动</span>
+          <span class="kbd-hints">⌨️ <kbd>WASD</kbd>/<kbd>方向键</kbd> 移动 · <kbd>Z</kbd> 撤销 · <kbd>R</kbd> 重置 · <kbd>V</kbd> 随机换图 · <kbd>H</kbd> 提示</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Victory Overlay Modal -->
+  <div class="modal-backdrop hidden" id="victoryModal" role="dialog" aria-modal="true">
+    <div class="modal-card victory-card">
+      <div class="victory-ribbon">🎉 关卡完成！</div>
+      <h2 id="victoryLevelTitle">第 1 关 · 初出茅庐</h2>
+      <div class="victory-stars" id="victoryStars">
+        <span class="star-big">★</span>
+        <span class="star-big">★</span>
+        <span class="star-big">★</span>
+      </div>
+      <p class="victory-rating-desc" id="victoryRatingText">完美通关！步步精准，推箱大师！</p>
+
+      <div class="victory-metrics">
+        <div class="v-metric">
+          <span class="v-label">移动步数</span>
+          <strong class="v-val" id="victoryMoves">0</strong>
+        </div>
+        <div class="v-metric">
+          <span class="v-label">推箱次数</span>
+          <strong class="v-val highlight" id="victoryPushes">0</strong>
+        </div>
+        <div class="v-metric">
+          <span class="v-label">三星标准</span>
+          <strong class="v-val" id="victoryPar">≤ 0 推</strong>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" id="btnVictoryReplay">🔄 再玩一次</button>
+        <button class="btn-secondary" id="btnVictoryLevels">📋 关卡列表</button>
+        <button class="btn-primary" id="btnVictoryNext">下一关 ➡️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 100-Level Selector Modal -->
+  <div class="modal-backdrop hidden" id="levelModal" role="dialog" aria-modal="true">
+    <div class="modal-card level-modal-card">
+      <div class="modal-header">
+        <div>
+          <h2>选择关卡 · 100关全解锁</h2>
+          <p class="modal-sub">每关预置 20 组独立校验题库（共 2,000 张地图），每次打开自动随机抽取</p>
+        </div>
+        <button class="close-btn" id="btnCloseLevelModal" aria-label="关闭">✕</button>
+      </div>
+
+      <div class="overall-progress-banner">
+        <div class="prog-info">
+          <span>已通关：<strong id="modalClearedText">0 / 100</strong></span>
+          <span>累计星级：<strong id="modalStarsText">0 / 300 ⭐</strong></span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="modalProgressFill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 5 Tier Tabs -->
+      <div class="tier-tabs" id="tierTabs">
+        <button class="tier-tab active" data-tier="0">
+          <span class="t-name">🌱 新手入门</span>
+          <span class="t-range">1 - 20 关</span>
+        </button>
+        <button class="tier-tab" data-tier="1">
+          <span class="t-name">🌿 渐入佳境</span>
+          <span class="t-range">21 - 40 关</span>
+        </button>
+        <button class="tier-tab" data-tier="2">
+          <span class="t-name">🧩 巧思妙推</span>
+          <span class="t-range">41 - 60 关</span>
+        </button>
+        <button class="tier-tab" data-tier="3">
+          <span class="t-name">🔥 烧脑进阶</span>
+          <span class="t-range">61 - 80 关</span>
+        </button>
+        <button class="tier-tab" data-tier="4">
+          <span class="t-name">👑 推箱大师</span>
+          <span class="t-range">81 - 100 关</span>
+        </button>
+      </div>
+
+      <div class="level-grid" id="levelGrid"></div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal-backdrop hidden" id="helpModal" role="dialog" aria-modal="true">
+    <div class="modal-card help-modal-card">
+      <div class="modal-header">
+        <h2>玩法说明与技巧指南</h2>
+        <button class="close-btn" id="btnCloseHelpModal" aria-label="关闭">✕</button>
+      </div>
+      <div class="help-body">
+        <div class="help-section">
+          <h3>🎯 游戏目标</h3>
+          <p>控制仓库管理员将所有<strong>木箱 📦</strong>推到<strong>发光目标点 🎯</strong>上。当所有目标点都被箱子覆盖时即可过关！注意：箱子只能往前<strong>推</strong>，不能往回<strong>拉</strong>。</p>
+        </div>
+        <div class="help-section">
+          <h3>🎮 便捷操作</h3>
+          <ul>
+            <li><strong>键盘控制：</strong>方向键或 <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动，<kbd>Z</kbd>/<kbd>Backspace</kbd> 撤销，<kbd>Y</kbd> 重做，<kbd>R</kbd> 重新开始当前题库，<kbd>V</kbd> 随机切换本关题库，<kbd>H</kbd> 提示一步，<kbd>P</kbd>/<kbd>N</kbd> 切换上下关。</li>
+            <li><strong>智能点击寻路：</strong>直接用鼠标或手指<strong>点击任意可达的空地板</strong>，角色会自动寻路走过去！<strong>点击角色身旁的箱子</strong>可直接推动它。</li>
+            <li><strong>触屏手势：</strong>支持在画布上滑动或使用屏幕方向键操控。</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>⭐ 星级评定与死角检测</h3>
+          <ul>
+            <li><strong>三星评价：</strong>推箱次数 ≤ 三星标准（Par Pushes）获 ★★★；≤ 1.35 倍标准获 ★★☆；完成关卡保底 ★☆☆。</li>
+            <li><strong>死角预警：</strong>当箱子被推入非目标的墙角死锁位置时，系统会温和提醒您按 <kbd>Z</kbd> 撤销。</li>
+            <li><strong>AI 提示与演示：</strong>遇到难关可随时点击「提示一步」或「通关演示」观摩标准解法。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="btnGotItHelp">开始挑战</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="levels.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
